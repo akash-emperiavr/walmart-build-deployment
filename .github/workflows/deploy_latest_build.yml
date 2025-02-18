@@ -57,7 +57,7 @@ jobs:
 
       - name: Execute Build Script on Instance
         run: |
-          gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command='bash -s' <<'EOF'
+          gcloud compute ssh $USERNAME@$INSTANCE_NAME --zone=$ZONE --command='bash -s' <<'EOF'
           # Set build number as an environment variable
           BUILD_NUMBER=${{ env.BUILD_No }}
           echo "BUILD_NUMBER=$BUILD_NUMBER" | sudo tee -a /etc/environment
