@@ -49,7 +49,7 @@ jobs:
             --zone=$ZONE \
             --machine-type=e2-medium \
             --scopes=cloud-platform \
-            --metadata=ssh-keys="${USERNAME}:$(cat ssh_key)"
+            --metadata=ssh-keys="${USERNAME}:$(cat ssh_key.pub)"
 
       - name: Wait for Instance to be Ready
         run: |
