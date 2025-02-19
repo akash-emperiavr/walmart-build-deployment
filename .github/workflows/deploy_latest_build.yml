@@ -14,6 +14,7 @@ jobs:
       BRANCH_NAME: none
       BUILD_No: Build_40.2
       VERSION: ci-cd-v1
+      PROJECT_ID: walmart-421118
 
     steps:
       - name: Checkout code
@@ -46,7 +47,7 @@ jobs:
           PROJECT_ID="walmart-421118"
           
           #Setting project id
-          gcloud config set project $PROJECT_ID
+          gcloud config set project ${{ env.PROJECT_ID }}
 
           gcloud compute instances create $INSTANCE_NAME \
             --image=$BASE_IMAGE \
@@ -63,7 +64,7 @@ jobs:
         run: |
           
           #Setting project id
-          gcloud config set project $PROJECT_ID
+          gcloud config set project ${{ env.PROJECT_ID }}
           
           # Decode and save SSH keys
           echo "${{ secrets.SSH_KEY_PEM }}" | base64 -d > my_key.pem
@@ -71,7 +72,7 @@ jobs:
           chmod 600 my_key.pem
 
           # Use SSH key explicitly
-          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE --project=$PROJECT_ID \
+          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE --project=${{ env.PROJECT_ID }} \
             --ssh-key-file=my_key.pem \
             --command='bash -s' <<'EOF'
           
@@ -81,9 +82,9 @@ jobs:
           source /etc/environment
 
           # Download and set up the latest build
-          gsutil cp gs://ugc-data-dump-unreal-project/Unreal_project_Builds/Build_40.2.zip /home/akash/project/Build_40.2.zip
-          unzip /home/akash/project/Build_40.2.zip -d /home/akash/project/Build_40.2
-          chmod -R 755 /home/akash/project/Build_40.2
+          gsutil cp gs://ugc-data-dump-unreal-project/Unreal_project_Builds/${{ env.BUILD_No }}.zip /home/akash/project/${{ env.BUILD_No }}.zip
+          unzip /home/akash/project/${{ env.BUILD_No }}.zip -d /home/akash/project/${{ env.BUILD_No }}
+          chmod -R 755 /home/akash/project/${{ env.BUILD_No }}
 
           # Reload daemon and restart service
           sudo systemctl daemon-reload
