@@ -68,7 +68,7 @@ jobs:
           chmod 600 my_key.pem
 
           # Use SSH key explicitly
-          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE --project=${{ env.PROJECT_ID }} \
+          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE \
             --ssh-key-file=my_key.pem \
             --command='bash -s' <<'EOF'
           
