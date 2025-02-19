@@ -62,10 +62,6 @@ jobs:
 
       - name: Execute Build Script on Instance
         run: |
-          
-          #Setting project id
-          gcloud config set project ${{ env.PROJECT_ID }}
-          
           # Decode and save SSH keys
           echo "${{ secrets.SSH_KEY_PEM }}" | base64 -d > my_key.pem
           echo "${{ secrets.SSH_KEY_PUB }}" | base64 -d > my_key.pem.pub
@@ -89,6 +85,7 @@ jobs:
           # Reload daemon and restart service
           sudo systemctl daemon-reload
           sudo systemctl restart unreal.service
+          EOF
           
           # Stop the instance
           gcloud compute instances stop $INSTANCE_NAME --zone=$ZONE
@@ -96,6 +93,6 @@ jobs:
           # Create a new GCP instance image
           gcloud compute images create application-image-walmart-dev-unreal-project-image-build-${{ env.VERSION }}-eu \
             --source-disk=$INSTANCE_NAME --source-disk-zone=$ZONE
-          EOF
+          
 
       
