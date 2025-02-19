@@ -57,8 +57,17 @@ jobs:
 
       - name: Execute Build Script on Instance
         run: |
-          echo ${{ secrets.SSH_KEY_PEM }} | base64 -d > my_key.pem
-          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE --ssh-key-file=my_key.pem --command='bash -s' <<'EOF'
+          # Decode and save SSH keys
+          echo "${{ secrets.SSH_KEY_PEM }}" | base64 -d > my_key.pem
+          echo "${{ secrets.SSH_KEY_PUB }}" | base64 -d > my_key.pem.pub
+          chmod 600 my_key.pem
+
+          # Use SSH key explicitly
+          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE \
+            --ssh-key-file=my_key.pem \
+            --ssh-key-file=my_key.pem.pub \
+            --command='bash -s' <<'EOF'
+          
           # Set build number as an environment variable
           BUILD_NUMBER=${{ env.BUILD_No }}
           echo "BUILD_NUMBER=$BUILD_NUMBER" | sudo tee -a /etc/environment
@@ -69,16 +78,12 @@ jobs:
           unzip /home/akash/project/Build_40.2.zip -d /home/akash/project/Build_40.2
           chmod -R 755 /home/akash/project/Build_40.2
 
-          # Update service file and run.sh to use the latest build
-          #sed -i "s|ExecStart=.*|ExecStart=/home/user/build/run.sh|" /etc/systemd/system/YOUR_SERVICE.service
-          #sed -i "s|BUILD_PATH=.*|BUILD_PATH=/home/user/build|" /home/user/build/run.sh
-
           # Reload daemon and restart service
           sudo systemctl daemon-reload
           sudo systemctl restart unreal.service
           
           # Stop the instance
-          gcloud compute instances stop $INSTANCE_NAME
+          gcloud compute instances stop $INSTANCE_NAME --zone=$ZONE
 
           # Create a new GCP instance image
           gcloud compute images create application-image-walmart-dev-unreal-project-image-build-${{ env.VERSION }}-eu \
