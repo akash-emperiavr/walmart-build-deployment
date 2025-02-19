@@ -43,7 +43,11 @@ jobs:
           BASE_IMAGE="projects/walmart-421118/global/images/walmart-dev-unreal-project-image-build-3-eu"
           ZONE="europe-west2-b"
           USERNAME="akash"
-      
+          PROJECT_ID="walmart-421118"
+          
+          #Setting project id
+          gcloud config set project $PROJECT_ID
+
           gcloud compute instances create $INSTANCE_NAME \
             --image=$BASE_IMAGE \
             --zone=$ZONE \
@@ -57,15 +61,18 @@ jobs:
 
       - name: Execute Build Script on Instance
         run: |
+          
+          #Setting project id
+          gcloud config set project $PROJECT_ID
+          
           # Decode and save SSH keys
           echo "${{ secrets.SSH_KEY_PEM }}" | base64 -d > my_key.pem
           echo "${{ secrets.SSH_KEY_PUB }}" | base64 -d > my_key.pem.pub
           chmod 600 my_key.pem
 
           # Use SSH key explicitly
-          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE \
+          gcloud compute ssh akash@$INSTANCE_NAME --zone=$ZONE --project=$PROJECT_ID \
             --ssh-key-file=my_key.pem \
-            --ssh-key-file=my_key.pem.pub \
             --command='bash -s' <<'EOF'
           
           # Set build number as an environment variable
