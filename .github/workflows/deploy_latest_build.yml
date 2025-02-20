@@ -12,7 +12,7 @@ jobs:
     env:
       REPO_NAME: walmart-build-deployment
       BRANCH_NAME: none
-      BUILD_No: Build_41
+      BUILD_No: Build_41.1
       VERSION: ci-cd-v
       PROJECT_ID: walmart-421118
       INSTANCE_NAME: ci-cd-build-instance
@@ -94,5 +94,7 @@ jobs:
           gcloud compute images create walmart-dev-unreal-project-image-build-eu-${{ env.VERSION }}-$IMAGE_NUMBER \
             --source-disk=${{ env.INSTANCE_NAME }} --source-disk-zone=${{ env.ZONE }}
           
+      - name: Terminating the CI-CD Instance
+        run : gcloud compute instances delete ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}
 
       
