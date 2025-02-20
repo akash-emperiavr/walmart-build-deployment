@@ -13,7 +13,7 @@ jobs:
       REPO_NAME: walmart-build-deployment
       BRANCH_NAME: none
       BUILD_No: Build_41
-      VERSION: ci-cd-v1
+      VERSION: ci-cd-v
       PROJECT_ID: walmart-421118
       INSTANCE_NAME: ci-cd-build-instance
       BASE_IMAGE: projects/walmart-421118/global/images/walmart-dev-unreal-project-image-build-3-eu
@@ -95,7 +95,8 @@ jobs:
           gcloud compute instances stop ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}
 
           # Create a new GCP instance image
-          gcloud compute images create walmart-dev-unreal-project-image-build-${{ env.VERSION }}-eu \
+          IMAGE_NUMBER=$(date +%Y%m%d%H%M%S)
+          gcloud compute images create walmart-dev-unreal-project-image-build-eu-${{ env.VERSION }}-$IMAGE_NUMBER \
             --source-disk=${{ env.INSTANCE_NAME }} --source-disk-zone=${{ env.ZONE }}
           
 
