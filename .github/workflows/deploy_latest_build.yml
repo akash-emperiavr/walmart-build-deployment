@@ -95,7 +95,7 @@ jobs:
           gcloud compute instances stop ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}
 
           # Create a new GCP instance image
-          IMAGE_NUMBER=$(date +%Y%m%d%H%M%S)
+          IMAGE_NUMBER=$(date +%m-%d-%H-%M)
           gcloud compute images create walmart-dev-unreal-project-image-build-eu-${{ env.VERSION }}-$IMAGE_NUMBER \
             --source-disk=${{ env.INSTANCE_NAME }} --source-disk-zone=${{ env.ZONE }}
           
