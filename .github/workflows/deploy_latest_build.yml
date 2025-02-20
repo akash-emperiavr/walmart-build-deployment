@@ -12,7 +12,7 @@ jobs:
     env:
       REPO_NAME: walmart-build-deployment
       BRANCH_NAME: none
-      BUILD_No: Build_40.2
+      BUILD_No: Build_41
       VERSION: ci-cd-v1
       PROJECT_ID: walmart-421118
       INSTANCE_NAME: ci-cd-build-instance
@@ -82,8 +82,9 @@ jobs:
 
           # Download and set up the latest build
           gsutil cp gs://ugc-data-dump-unreal-project/Unreal_project_Builds/${{ env.BUILD_No }}.zip /home/akash/project/${{ env.BUILD_No }}.zip
-          unzip /home/akash/project/${{ env.BUILD_No }}.zip -d /home/akash/project/${{ env.BUILD_No }}
-          chmod -R 755 /home/akash/project/${{ env.BUILD_No }}
+          unzip /home/akash/project/${{ env.BUILD_No }}.zip -d /home/akash/project
+          chmod -R 777 /home/akash/project/${{ env.BUILD_No }}
+          rm /home/akash/project/${{ env.BUILD_No }}.zip
 
           # Reload daemon and restart service
           sudo systemctl daemon-reload
