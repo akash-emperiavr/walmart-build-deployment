@@ -12,11 +12,11 @@ jobs:
     env:
       REPO_NAME: walmart-build-deployment
       BRANCH_NAME: none
-      BUILD_No: Build_43
+      BUILD_No: Build_43.1
       VERSION: ci-cd-v
       PROJECT_ID: walmart-421118
       INSTANCE_NAME: ci-cd-build-instance
-      BASE_IMAGE: projects/walmart-421118/global/images/walmart-dev-unreal-project-build-image-eu
+      BASE_IMAGE: projects/walmart-421118/global/images/walmart-dev-unreal-project-build-image-1-eu
       ZONE: europe-west2-b
       USERNAME: akash
 
