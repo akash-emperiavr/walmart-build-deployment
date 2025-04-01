@@ -1,4 +1,4 @@
-name: Deploy latest Build to GCP
+name: Deploy latest Build to PROD GCP 
 
 on:
   push:
