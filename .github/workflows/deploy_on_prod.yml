@@ -1,0 +1,98 @@
+name: Deploy latest Build to PROD GCP 
+
+on:
+  push:
+    branches:
+      - prod
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      REPO_NAME: walmart-build-deployment
+      BRANCH_NAME: none
+      BUILD_No: Build_ci_cd_12
+      VERSION: ci-cd-v
+      PROJECT_ID: walmart-421118
+      INSTANCE_NAME: ci-cd-build-instance
+      BASE_IMAGE: projects/walmart-421118/global/images/walmart-prod-unreal-project-build-image-1-eu
+      ZONE: europe-west2-b
+      USERNAME: akash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_GCP }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      - name: Create SSH Key files
+        run: echo ${{ secrets.SSH_KEY }} | base64 -d > ssh_key | chmod 600 ssh_key | echo ${{ secrets.SSH_KEY_PUB }} | base64 -d > ssh_key.pub #| ssh-keygen -y -f ssh_key > ssh_key.pub  # Generate public key from private key
+    
+      - name: Create GCP Instance from Base Image
+        run: |
+          #Setting project id
+          gcloud config set project ${{ env.PROJECT_ID }}
+
+          gcloud compute instances create ${{ env.INSTANCE_NAME }} \
+            --image=${{ env.BASE_IMAGE }} \
+            --zone=${{ env.ZONE }}\
+            --machine-type=e2-medium \
+            --scopes=cloud-platform \
+            --metadata=ssh-keys="${{ env.USERNAME }}:$(cat ssh_key.pub)"
+
+      - name: Wait for Instance to be Ready
+        run: |
+          sleep 60  # Adjust wait time if needed
+
+      - name: Execute Build Script on Instance
+        run: |
+          # Decode and save SSH keys
+          echo "${{ secrets.SSH_KEY_PEM }}" | base64 -d > my_key.pem
+          echo "${{ secrets.SSH_KEY_PUB }}" | base64 -d > my_key.pem.pub
+          chmod 600 my_key.pem
+
+          # Use SSH key explicitly
+          gcloud compute ssh akash@${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }} \
+            --ssh-key-file=my_key.pem \
+            --command='bash -s' <<'EOF'
+          
+          # Set build number as an environment variable
+          BUILD_NUMBER=${{ env.BUILD_No }}
+          echo "BUILD_NUMBER=${{ env.BUILD_No }}" | sudo tee -a /etc/environment
+          source /etc/environment
+
+          # Download and set up the latest build
+          gsutil cp gs://ugc-data-dump-unreal-project/Unreal_project_Builds/${{ env.BUILD_No }}.zip /home/akash/project/${{ env.BUILD_No }}.zip
+          unzip /home/akash/project/${{ env.BUILD_No }}.zip -d /home/akash/project
+          chmod -R 777 /home/akash/project/${{ env.BUILD_No }}
+          rm /home/akash/project/${{ env.BUILD_No }}.zip
+
+          # Reload daemon and restart service
+          sudo systemctl daemon-reload
+          sudo systemctl restart unreal.service
+          EOF
+          
+          # Stop the instance
+          gcloud compute instances stop ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}
+
+          # Create a new GCP instance image
+          IMAGE_NUMBER=$(date +%m-%d-%H-%M)
+          gcloud compute images create walmart-dev-unreal-project-image-build-eu-${{ env.VERSION }}-$IMAGE_NUMBER \
+            --source-disk=${{ env.INSTANCE_NAME }} --source-disk-zone=${{ env.ZONE }}
+          
+      - name: Terminating the CI-CD Instance
+        run : gcloud compute instances delete ${{ env.INSTANCE_NAME }} --zone=${{ env.ZONE }}
