@@ -15,7 +15,7 @@ jobs:
       BUILD_No: Build_ci_cd_17
       VERSION: ci-cd-v
       PROJECT_ID: walmart-421118
-      INSTANCE_NAME: ci-cd-build-instance
+      INSTANCE_NAME: ci-cd-build-instance-prod
       BASE_IMAGE: projects/walmart-421118/global/images/walmart-prod-unreal-project-build-image-3-eu
       ZONE: europe-west2-b
       USERNAME: akash
